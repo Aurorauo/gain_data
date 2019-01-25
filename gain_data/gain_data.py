@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jan 25 10:30:46 2019
-
 @author: zf
 """
 
@@ -41,8 +40,8 @@ class spider:
                 req.encoding=req.apparent_encoding
             text=req.text
             try:
-                if kwargs["path"] and kwargs["name"]:
-                    with open(kwargs["path"]+kwargs["name"],write) as f:
+                if kwargs["path"]:
+                    with open(kwargs["path"],write) as f:
                         f.write(text)
                         f.close()
             except:
@@ -61,7 +60,7 @@ class spider:
             req=requests.get(self.url,headers=self.headers,timeout=self.timeout)
             req.encoding=req.apparent_encoding
             try:
-                if kwargs["path"] and kwargs["name"]:
+                if kwargs["path"]:
                     with open(kwargs["path"]+kwargs["name"],write) as f:
                         f.write(req.content)
                         f.close()
@@ -72,14 +71,28 @@ class spider:
             return ''
 
 '''通过正则表达式来解析出想到得到的数据，返回值为得到的数据列表'''
-def get_data(text,match):   #text为待解析字符串，match列表中存放待解析字符串前后模范字符串
+def get_data(text,match,mode='0'):   #text为待解析字符串，match列表中存放待解析字符串前后模范字符串
     try:
         pattern=''
-        for i in match:
-            pattern=pattern+str(i)+'(.*?)'
-        pattern=pattern[:-5]
-        data=re.compile(pattern).findall(text)
-        return [data,len(match)]
+        if mode!='0':
+            n=1
+            for i in match:
+                if n%2:
+                    pattern=pattern+str(i)+'(.*?)'
+                else:
+                    pattern=pattern+str(i)+'.*?'
+                n=n+1
+            pattern=pattern[:-3]
+        else:
+            for i in match:
+                pattern=pattern+str(i)+'(.*?)'
+            pattern=pattern[:-5]
+        print(pattern)
+        data=re.compile(pattern).findall(text.replace('\n','').replace('\t','').replace('\r',''))
+        if mode!='0':
+            return [data,int(len(match)/2.0)]
+        else:
+            return [data,len(match)]
     except:
         return []
     
@@ -110,4 +123,3 @@ def savedata(path,data_list,):   #path 为数据保存路径；data_list为保�
             new.save(path)
     except:
         pass
-            
